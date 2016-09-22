@@ -11,10 +11,7 @@ _start:
 		jmp	start
 
 start:
-		movb	$'A', %al
-		movb	$0x1E, %ah
-		movl	$0xB8000, %ecx
-		movl	%eax, (%ecx)
+		nop
 loop:		jmp	loop
 
 . = _start + 510
