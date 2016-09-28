@@ -27,14 +27,16 @@
 
 _start:
 .code16
-		xorw	%ax, %ax
-		movw	%ax, %ds
-		movw	%ax, %ss
-		movw	%ax, %fs
+		xorw	%ax,	%ax
+		movw	%ax,	%ds
+		movw	%ax,	%ss
+		movw	%ax,	%fs
 		jmp	start
 
 start:
-		nop
+		movb	$0xe,	%ah
+		movb	$'1',	%al
+		int	$0x10
 loop:		jmp	loop
 
 . = _start + 510
