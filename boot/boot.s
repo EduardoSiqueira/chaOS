@@ -34,11 +34,15 @@ _start:
 		jmp	start
 
 start:
-loop:
-		int	$0x09		#interrupt de teclado
 
+loop:
+		#ler uma tecla, bloqueando execucao
+		movb	$0x00,	%ah
+		int	$0x16		#interrupt de teclado
+		#a tecla lida eh salva no registrador %al em formato ASCII(amem)
+
+		#printar um caracter(contido no registrador %al)
 		movb	$0x0E,	%ah
-		movb	(0x041E),	%al
 		int	$0x10		#interrupt de video
 
 		jmp	loop
