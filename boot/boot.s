@@ -34,10 +34,14 @@ _start:
 		jmp	start
 
 start:
-		movb	$0xe,	%ah
-		movb	$'1',	%al
-		int	$0x10
-loop:		jmp	loop
+loop:
+		int	$0x09		#interrupt de teclado
+
+		movb	$0x0E,	%ah
+		movb	(0x041E),	%al
+		int	$0x10		#interrupt de video
+
+		jmp	loop
 
 . = _start + 510
 .byte		0X55, 0xAA
