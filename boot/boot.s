@@ -1,9 +1,9 @@
 #Copyright © 2016
 #
-#	Ali de França Husseinat			n°USP: 
+#	Ali de França Husseinat			n°USP: 9292966 
 #	Eduardo de Sousa Siqueira		n°USP: 9278299
-#	Lucas Silva Marcondes			n°USP: 
-#	Ricardo Fernandes França do Vale	n°USP: 
+#	Lucas Silva Marcondes			n°USP: 9293612
+#	Ricardo Fernandes França do Vale	n°USP: 9293477 
 #
 #This file is part of ChaOS.
 #
