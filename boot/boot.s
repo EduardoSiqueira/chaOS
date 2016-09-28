@@ -39,7 +39,7 @@ loop:
 		#ler uma tecla, bloqueando execucao
 		movb	$0x00,	%ah
 		int	$0x16		#interrupt de teclado
-		#a tecla lida eh salva no registrador %al em formato ASCII(amem)
+		#a tecla lida eh salva no registrador %al em formato ASCII
 
 		#printar um caracter(contido no registrador %al)
 		movb	$0x0E,	%ah
