@@ -22,8 +22,8 @@
 # along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 
 
+.section	.text
 .globl	_start
-.text
 
 _start:
 .code16
