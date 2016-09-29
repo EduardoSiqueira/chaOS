@@ -40,7 +40,25 @@ loop:
 		movb	$0x00,	%ah
 		int	$0x16		#interrupt de teclado
 		#a tecla lida eh salva no registrador %al em formato ASCII
+	char_switch:
+	#quando enter, passa para a proxima linha
+	case_enter:
+		movb	$0x0D,	%bl	#carriage return - '\r'
+		cmp	%bl,	%al
+		jne	default
 
+		#quando o enter eh pressionado, imprime um newline e logo apos um carriage return
+		movb	$0x0A,	%al	#newline - '\n'
+		movb	$0x0E,	%ah
+		int	$0x10
+
+		movb	$0x0D,	%al
+
+		jmp	default
+
+
+
+	default:
 		#printar um caracter(contido no registrador %al)
 		movb	$0x0E,	%ah
 		int	$0x10		#interrupt de video
