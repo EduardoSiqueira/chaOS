@@ -70,7 +70,7 @@ loop:
 			cmp     %bl, %al
 			jne default
 		
-			#quando o 4 eh pressionado, a tela e limpada
+			#quando o 4 eh pressionado, reinicia o sistema
 			call reboot
 
 			jmp loop
@@ -111,6 +111,7 @@ clear_screen:
 #Funcao que reboota o sistema quando chamada
 reboot:
 		int $0x19
+		ret
 
 
 . = _start + 510
