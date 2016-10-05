@@ -43,49 +43,61 @@ loop:
 	    char_switch:
 	
             #quando enter, passa para a proxima linha
-	        case_enter:
+		case_enter:
 		        movb	$0x0D,	%bl	#carriage return - '\r'
-		        cmp	%bl,	%al
+		        cmp	%bl,	%al	#detectando o enter
 		        jne	case_clear_screen
 
 		        #quando o enter eh pressionado, imprime um newline e logo apos um carriage return
-		        movb	$0x0A,	%al	#newline - '\n'
-		        movb	$0x0E,	%ah
-		        int	$0x10
-
-		        movb	$0x0D,	%al
+			call print_newline
 
 		        jmp	default
 
             #quando for apertada a tecla 1, a tela sera limpada
-            case_clear_screen:
-                movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
-                cmp     %bl, %al
-                jne default
-        
-		        #quando o 1 eh pressionado, a tela e limpada
-                movb    $0x06, %ah #valor de ah para limpar a tela, rolando-a para cima
-                movb    $0x00, %al #valor setado para indicar que toda a pagina deve ser limpada
-                movb    $0x07, %bh #atributo usado na linha limpada
-                movl    $0x0000, %cx #posicao de inicio para limpar a tela
-                movl    $0x184F, %dx #posicao de fim para limpar a tela
-                int     $0x10 #interrupt de video    
-                #por fim, eh necessario setar o cursor na posicao inicial da tela
-                movb    $0x02, %ah #valor de ah para setar posicao de cursor
-                movb    $0x00, %bh #valor da pagina default
-                #setando posicao no topo a esquerda
-                movb    $0x00, %dh
-                movb    $0x00, %dl
-                int     $0x10 #interrupt de video    
+		case_clear_screen:
+			movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp     %bl, %al
+			jne default
+		
+			#quando o 1 eh pressionado, a tela e limpada
+			call clear_screen
 
-                jmp loop
+			jmp loop
 
-	        default:
+		default:
 		        #printar um caracter(contido no registrador %al)
 		        movb	$0x0E,	%ah
 		        int	$0x10		#interrupt de video
 
 		        jmp	loop
+print_newline:
+		movb	$0x0A,	%al	#newline - '\n'
+		movb	$0x0E,	%ah
+		int	$0x10
+
+		movb	$0x0D,	%al
+		int	$0x10
+
+		ret
+
+clear_screen:
+		movb    $0x06, %ah #valor de ah para limpar a tela, rolando-a para cima
+		movb    $0x00, %al #valor setado para indicar que toda a pagina deve ser limpada
+		movb    $0x07, %bh #atributo usado na linha limpada
+		movw    $0x0000, %cx #posicao de inicio para limpar a tela
+		movw    $0x184F, %dx #posicao de fim para limpar a tela
+		int     $0x10 #interrupt de video    
+
+		#por fim, eh necessario setar o cursor na posicao inicial da tela
+		movb    $0x02, %ah #valor de ah para setar posicao de cursor
+		movb    $0x00, %bh #valor da pagina default
+		#setando posicao no topo a esquerda
+		movb    $0x00, %dh
+		movb    $0x00, %dl
+		int     $0x10 #interrupt de video    
+
+		ret
+
 
 . = _start + 510
 .byte		0X55, 0xAA
