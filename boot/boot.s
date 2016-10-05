@@ -55,15 +55,21 @@ loop:
 
             #quando for apertada a tecla 1, a tela sera limpada
 		case_clear_screen:
-			movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
-			cmp     %bl, %al
-			jne default
+			movb    $0x31,	%bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp     %bl,	%al
+			jne 	case_memory_size
 		
 			#quando o 1 eh pressionado, a tela e limpada
-			call clear_screen
+			call	clear_screen
 
-			jmp loop
+			jmp	loop
 
+		case_memory_size:
+			movb	$0x35,	%bl
+			cmp	%bl,	%al
+			jne	default
+
+			jmp	loop
 		default:
 		        #printar um caracter(contido no registrador %al)
 		        movb	$0x0E,	%ah
@@ -71,6 +77,8 @@ loop:
 
 		        jmp	loop
 print_newline:
+		pusha	#protegendo os valores fora da funcao
+
 		movb	$0x0A,	%al	#newline - '\n'
 		movb	$0x0E,	%ah
 		int	$0x10
@@ -78,9 +86,12 @@ print_newline:
 		movb	$0x0D,	%al
 		int	$0x10
 
+		popa	#restaurando os valores
 		ret
 
 clear_screen:
+		pusha
+
 		movb    $0x06, %ah #valor de ah para limpar a tela, rolando-a para cima
 		movb    $0x00, %al #valor setado para indicar que toda a pagina deve ser limpada
 		movb    $0x07, %bh #atributo usado na linha limpada
@@ -96,8 +107,18 @@ clear_screen:
 		movb    $0x00, %dl
 		int     $0x10 #interrupt de video    
 
+		popa
 		ret
 
+memory_size:
+		pusha
+
+		int	$0x12
+		movb	$0x0E,	%ah
+		int	$0x10
+
+		popa
+		ret
 
 . = _start + 510
 .byte		0X55, 0xAA
