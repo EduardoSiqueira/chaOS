@@ -33,6 +33,11 @@ _start:
 		movw	%ax,	%fs
 		jmp	start
 
+#string da versao do boot
+bootVersion:
+	.asciz "ChaOS v 0.1\n\r"
+
+
 start:
 
 loop:
@@ -57,11 +62,23 @@ loop:
 		case_clear_screen:
 			movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
 			cmp     %bl, %al
-			jne default
+			jne 	case_print_version
 		
 			#quando o 1 eh pressionado, a tela e limpada
 			call clear_screen
 
+			jmp loop
+
+		#quando for apertada a tecla 2, a versao do boot sera impressa	
+		case_print_version:
+			movb	$0x32, %bl  #valor de 2 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp	%bl, %al
+			jne default
+			
+			#quando o 2 eh pressionado, imprime a versao do boot
+			movw    $bootVersion, %bx #posicao do inicio da mensagem da versao
+			call print_str
+			
 			jmp loop
 
 		default:
@@ -98,6 +115,27 @@ clear_screen:
 
 		ret
 
+print_str:	
+                movb    $0x00, %dl #'\0' em ascii
+                
+		print_str_loop:
+                        movb    (%bx), %al #obtem o caracter contido na posicao bx da memoria
+                        
+			#finaliza a impressao caso chegue ao '\0'
+			cmp     %al, %dl
+                        je     print_str_end
+                       
+                        #printar um caracter(contido no registrador %al)
+			movb    $0x0E,  %ah
+                        int     $0x10           #interrupt de video
+			
+                        inc     %bx #incrementa o endereco da mensagem
+			
+			jmp 	print_str_loop 
+			
+	print_str_end:
+
+                ret
 
 . = _start + 510
 .byte		0X55, 0xAA
