@@ -57,10 +57,21 @@ loop:
 		case_clear_screen:
 			movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
 			cmp     %bl, %al
-			jne default
+			jne case_reboot
 		
 			#quando o 1 eh pressionado, a tela e limpada
 			call clear_screen
+
+			jmp default
+
+			#quando for digitado 4 o sistema sera rebootado.
+		case_reboot:
+			movb    $0x34, %bl #valor de 4 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp     %bl, %al
+			jne default
+		
+			#quando o 4 eh pressionado, a tela e limpada
+			call reboot
 
 			jmp loop
 
@@ -97,6 +108,9 @@ clear_screen:
 		int     $0x10 #interrupt de video    
 
 		ret
+#Funcao que reboota o sistema quando chamada
+reboot:
+		int $0x19
 
 
 . = _start + 510
