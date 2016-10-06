@@ -75,12 +75,12 @@ loop:
 		case_clear_screen:
 			movb    $0x31, %bl #valor de 1 na tabela ascii em hexadecimal eh colocado em bl 
 			cmp     %bl, %al
-			jne 	case_print_version
+			jne case_print_version
 		
 			#quando o 1 eh pressionado, a tela e limpada
 			call clear_screen
 
-			jmp loop
+			jmp default
 
 		#quando for apertada a tecla 2, a versao do boot sera impressa	
 		case_print_version:
@@ -95,17 +95,26 @@ loop:
 			jmp loop
 
 		#quando for apertada a tecla 3, sao impressos 3 dispositivos e eh informado se estao conectados ou nao	
-        case_check_devices:
+		case_check_devices:
 			movb	$0x33, %bl  #valor de 3 na tabela ascii em hexadecimal eh colocado em bl 
 			cmp	    %bl, %al
-			jne     default
+			jne case_reboot
 			
 			#quando o 3 eh pressionado, imprime dispostivos conectados
 			call    check_devices
 			
 			jmp loop
 
+		#quando for digitado 4 o sistema sera rebootado.
+		case_reboot:
+			movb    $0x34, %bl #valor de 4 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp     %bl, %al
+			jne     default
+		
+			#quando o 4 eh pressionado, reinicia o sistema
+			call reboot
 
+			jmp loop
 
 		default:
 		        #printar um caracter(contido no registrador %al)
@@ -141,6 +150,10 @@ clear_screen:
 		movb    $0x00, %dl
 		int     $0x10 #interrupt de video    
 
+		ret
+#Funcao que reboota o sistema quando chamada
+reboot:
+		int $0x19
 		ret
 
 print_str:
