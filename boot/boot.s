@@ -36,6 +36,19 @@ _start:
 #string da versao do boot
 bootVersion:
 	.asciz "ChaOS v 0.1\n\r"
+#strings para a impressao de dispositivos conectados
+intro:
+    .asciz "Dispositivos: \n\r"
+success:
+    .asciz "Dispositivo conectado\n\r"
+failure:
+    .asciz "Dispositivo nao conectado\n\r"
+device_diskette:
+    .asciz "FLoppy disk drive\n\r"
+device_mc:
+    .asciz "Math Coprocessor\n\r"
+device_gp:
+    .asciz "Game Port\n\r"
 
 
 start:
@@ -72,14 +85,27 @@ loop:
 		#quando for apertada a tecla 2, a versao do boot sera impressa	
 		case_print_version:
 			movb	$0x32, %bl  #valor de 2 na tabela ascii em hexadecimal eh colocado em bl 
-			cmp	%bl, %al
-			jne default
+			cmp	    %bl, %al
+			jne     case_check_devices
 			
 			#quando o 2 eh pressionado, imprime a versao do boot
 			movw    $bootVersion, %bx #posicao do inicio da mensagem da versao
 			call print_str
 			
 			jmp loop
+
+		#quando for apertada a tecla 3, sao impressos 3 dispositivos e eh informado se estao conectados ou nao	
+        case_check_devices:
+			movb	$0x33, %bl  #valor de 3 na tabela ascii em hexadecimal eh colocado em bl 
+			cmp	    %bl, %al
+			jne     default
+			
+			#quando o 3 eh pressionado, imprime dispostivos conectados
+			call    check_devices
+			
+			jmp loop
+
+
 
 		default:
 		        #printar um caracter(contido no registrador %al)
@@ -116,10 +142,10 @@ clear_screen:
 		ret
 
 print_str:	
-                movb    $0x00, %dl #'\0' em ascii
+        movb    $0x00, %dl #'\0' em ascii
                 
 		print_str_loop:
-                        movb    (%bx), %al #obtem o caracter contido na posicao bx da memoria
+            movb    (%bx), %al #obtem o caracter contido na posicao bx da memoria
                         
 			#finaliza a impressao caso chegue ao '\0'
 			cmp     %al, %dl
@@ -133,9 +159,42 @@ print_str:
 			
 			jmp 	print_str_loop 
 			
-	print_str_end:
+	    print_str_end:
+            ret
 
-                ret
+check_devices:
+        movw    $intro, %bx
+        call    print_str
+        #interrupcao usada para verificar listagem de dispositivos conectados
+        int     $0x11
+        #copia do resultado da interrupcao
+        movw    %ax, %bx
+        #verificacao do floppy disk drive
+        andw    $0x0001, %bx
+        #printando mensagem para disquete
+        movw    $device_diskette, %bx
+        call    print_str
+        #verificando se dipositivo esta concectado 
+        movw    $0x0001, %cx
+        cmpw     %bx, $cx
+        ceq     print_success
+        movw    $0x0000, %cx
+        cmpw     %bx, $cx
+        ceq     print_failure
+        ret
 
+
+print_success: #impressao de mensagem de dispositivo encontrado
+        movw    $success, %bx
+        call    print_str
+        ret
+
+print_failure: #impressao de mensagem de dispositvo nao encontrado
+        movw    $failure, %bx
+        call    print_str
+        ret
+
+
+    
 . = _start + 510
 .byte		0X55, 0xAA
