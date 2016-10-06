@@ -44,7 +44,7 @@ success:
 failure:
     .asciz "Dispositivo nao conectado\n\r"
 device_diskette:
-    .asciz "FLoppy disk drive\n\r"
+    .asciz "Floppy disk drive\n\r"
 device_mc:
     .asciz "Math Coprocessor\n\r"
 device_gp:
@@ -113,6 +113,8 @@ loop:
 		        int	$0x10		#interrupt de video
 
 		        jmp	loop
+
+
 print_newline:
 		movb	$0x0A,	%al	#newline - '\n'
 		movb	$0x0E,	%ah
@@ -167,33 +169,34 @@ check_devices:
         call    print_str
         #interrupcao usada para verificar listagem de dispositivos conectados
         int     $0x11
-        #copia do resultado da interrupcao
-        movw    %ax, %bx
-        #verificacao do floppy disk drive
-        andw    $0x0001, %bx
-        #printando mensagem para disquete
-        movw    $device_diskette, %bx
-        call    print_str
-        #verificando se dipositivo esta concectado 
-        movw    $0x0001, %cx
-        cmpw     %bx, $cx
-        ceq     print_success
-        movw    $0x0000, %cx
-        cmpw     %bx, $cx
-        ceq     print_failure
+        check_diskette:
+            #copia do resultado da interrupcao
+            movw    %ax, %bx
+            #verificacao do floppy disk drive
+            andw    $0x0001, %bx
+            #printando mensagem para disquete
+            movw    $device_diskette, %bx
+            call    print_str
+            #verificando se dipositivo esta concectado  
+            cmp     $0x0001, %bx
+            je      print_success_diskette
+            cmp     $0x0000, %bx
+            je      print_failure_diskette
+        
+        check_mc:
+
         ret
+        
 
-
-print_success: #impressao de mensagem de dispositivo encontrado
+print_success_diskette: #impressao de mensagem de dispositivo encontrado
         movw    $success, %bx
         call    print_str
-        ret
+        jmp     check_mc
 
-print_failure: #impressao de mensagem de dispositvo nao encontrado
+print_failure_diskette: #impressao de mensagem de dispositvo nao encontrado
         movw    $failure, %bx
         call    print_str
-        ret
-
+        jmp     check_mc
 
     
 . = _start + 510
