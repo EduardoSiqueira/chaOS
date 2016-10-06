@@ -43,12 +43,12 @@ success:
     .asciz "Dispositivo conectado\n\r"
 failure:
     .asciz "Dispositivo nao conectado\n\r"
-device_diskette:
+device_floppy_disk:
     .asciz "Floppy disk drive\n\r"
 device_mc:
     .asciz "Math Coprocessor\n\r"
-device_gp:
-    .asciz "Game Port\n\r"
+device_pd:
+    .asciz "Pointing Device\n\r"
 
 
 start:
@@ -143,7 +143,8 @@ clear_screen:
 
 		ret
 
-print_str:	
+print_str:
+        pusha	
         movb    $0x00, %dl #'\0' em ascii
                 
 		print_str_loop:
@@ -162,6 +163,7 @@ print_str:
 			jmp 	print_str_loop 
 			
 	    print_str_end:
+            popa
             ret
 
 check_devices:
@@ -169,23 +171,51 @@ check_devices:
         call    print_str
         #interrupcao usada para verificar listagem de dispositivos conectados
         int     $0x11
-        check_diskette:
+        check_fp:
             #copia do resultado da interrupcao
-            movw    %ax, %bx
+            movw    %ax, %cx
             #verificacao do floppy disk drive
-            andw    $0x0001, %bx
-            #printando mensagem para disquete
-            movw    $device_diskette, %bx
+            andw    $0x0001, %cx
+            #printando mensagem para floppy disk
+            movw    $device_floppy_disk, %bx
             call    print_str
             #verificando se dipositivo esta concectado  
-            cmp     $0x0001, %bx
+            cmp     $0x0001, %cx
             je      print_success_diskette
-            cmp     $0x0000, %bx
+            cmp     $0x0000, %cx
             je      print_failure_diskette
         
         check_mc:
+            #copia do resultado da interrupcao
+            movw    %ax, %cx
+            #verificando se o math coprocessor esta instalado
+            andw    $0x0002, %cx
+            #printando mensagem para math coprocessor
+            movw    $device_mc, %bx
+            call    print_str
+            #verificando se dipositivo esta concectado  
+            cmp     $0x0002, %cx
+            je      print_success_mc
+            cmp     $0x0000, %cx
+            je      print_failure_mc
+        
+        check_pd:
+            #copia do resultado da interrupcao
+            movw    %ax, %cx
+            #verificando se a game port esta instalada
+            andw    $0x0004, %cx
+            #printando mensagem para pointing device
+            movw    $device_pd, %bx
+            call    print_str
+            #verificando se dipositivo esta concectado  
+            cmp     $0x0004, %cx
+            je      print_success_pd
+            cmp     $0x0000, %cx
+            je      print_failure_pd
+                    
 
-        ret
+        check_devices_end:
+            ret
         
 
 print_success_diskette: #impressao de mensagem de dispositivo encontrado
@@ -197,6 +227,26 @@ print_failure_diskette: #impressao de mensagem de dispositvo nao encontrado
         movw    $failure, %bx
         call    print_str
         jmp     check_mc
+
+print_success_mc: #impressao de mensagem de dispositivo encontrado
+        movw    $success, %bx
+        call    print_str
+        jmp     check_pd
+
+print_failure_mc: #impressao de mensagem de dispositvo nao encontrado
+        movw    $failure, %bx
+        call    print_str
+        jmp     check_pd
+
+print_success_pd: #impressao de mensagem de dispositivo encontrado
+        movw    $success, %bx
+        call    print_str
+        jmp     check_devices_end
+
+print_failure_pd: #impressao de mensagem de dispositvo nao encontrado
+        movw    $failure, %bx
+        call    print_str
+        jmp     check_devices_end
 
     
 . = _start + 510
