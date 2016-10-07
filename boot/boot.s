@@ -118,13 +118,12 @@ loop:
 
 		#quando for apertada a tecla 5, eh impresso a memoria ram disponivel, em blocos de 1kb
 		case_memory_size:
-			movb	$0x35,	%bl
+			movb	$0x35,	%bl	#valor 5 da tabela ascii
 			cmp	%bl,	%al
 			jne	default
 
-			call	print_newline
-			call	memory_size
-			call	print_newline
+			call	memory_size	#imprime a quantidade de memoria
+			call	print_newline	#imprime uma quebra de linha logo apos
 
 			jmp	loop
 		#caso qualquer outra tecla seja pressionada, ela apenas eh imprimida
@@ -280,53 +279,62 @@ print_failure_pd: #impressao de mensagem de dispositvo nao encontrado
         jmp     check_devices_end
 
 memory_size:
-		pusha
+		pusha	#protegendo os registradores
 
 		int	$0x12
 		#retorna o tamanho da memoria no registrador %ax
 		#que eh dividido em: %ah - bits 8-15 | %al - bits 0-7
 
-		movb	%ah,	%bh	#movendo primeiro byte
+		movb	%ah,	%bh	#movendo primeiro byte para utilizarmos ah e al nas rotinas de impressao
 		movb	%al,	%bl	#movendo segundo byte
 
 		movb	$4,	%dl	#contador de iteracoes
 
 	hex_converter:
 		movb	$4,	%cl
-		ror	%cl,	%bh
+		ror	%cl,	%bh	#fazemos uma rotacao de 4 bits, para imprimir os digitos hexadecimais na ordem certa
 		movb	$0x0F,	%ch	#valor de comparacao
 		andb	%bh,	%ch	#fazendo and de 4 em 4 bits - digitos hexadecimais
+		#assim, agora temos em %ch o digito a ser imprimido, portanto precisamos converte-lo para seu codigo ascii
 
-		movb	$9,	%dh
+		movb	$9,	%dh	#checando se o digito eh menor que 9
 		cmp	%dh,	%ch
-		jg	hex_digit
+		jg	hex_digit	#se nao for, eh um dos digitos nao decimais(A,B,C,D,E,F)
 
+		#digito decimal - somamos '0' e imprimimos
 		dec_digit:
 			movb	$0x30,	%dh
 			addb	%dh,	%ch
 			jmp hex_converter_print
 
+		#digito nao decimal - somamos 'A' e imprimimos
 		hex_digit:
+			#subtraimos 10 do digito, para obter o codigo ascii correto
 			movb	$0x0A,	%dh
 			subb	%dh,	%ch
-			movb	$0x41,	%dh
+			movb	$0x41,	%dh	#'A' na tabela ascii
 			addb	%dh,	%ch
 
+		#imprimindo o digito
 		hex_converter_print:
 			movb	%ch,	%al
 			movb	$0x0E,	%ah
 			int	$0x10
 
+		#decrementando o contador de iteracoes
 		decb	%dl
-		jz	memory_size_end
+		jz	memory_size_end	#quando chegar a 0, acabamos o loop
 
+		#depois de 2 iteracoes, um dos bytes a foi convertido, e precisamos agora do outro
 		movb	$2,	%dh
 		cmp	%dl,	%dh
 		jne	hex_converter
 
+		#trocando o byte sendo convertido - isso eh feito para economizar o uso de registradores
 		movb	%bl,	%bh
 		jmp	hex_converter
 
+	#final da funcao - restaura os registradores
 	memory_size_end:
 		popa
 		ret
