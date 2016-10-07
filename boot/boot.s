@@ -78,9 +78,9 @@ loop:
 			jne case_print_version
 		
 			#quando o 1 eh pressionado, a tela e limpada
-			call clear_screen
+			call	clear_screen
 
-			jmp loop
+			jmp	loop
 
 		#quando for apertada a tecla 2, a versao do boot sera impressa	
 		case_print_version:
@@ -109,13 +109,25 @@ loop:
 		case_reboot:
 			movb    $0x34, %bl #valor de 4 na tabela ascii em hexadecimal eh colocado em bl 
 			cmp     %bl, %al
-			jne     default
+			jne     case_memory_size
 		
 			#quando o 4 eh pressionado, reinicia o sistema
 			call reboot
 
 			jmp loop
 
+		#quando for apertada a tecla 5, eh impresso a memoria ram disponivel, em blocos de 1kb
+		case_memory_size:
+			movb	$0x35,	%bl
+			cmp	%bl,	%al
+			jne	default
+
+			call	print_newline
+			call	memory_size
+			call	print_newline
+
+			jmp	loop
+		#caso qualquer outra tecla seja pressionada, ela apenas eh imprimida
 		default:
 		        #printar um caracter(contido no registrador %al)
 		        movb	$0x0E,	%ah
@@ -125,6 +137,8 @@ loop:
 
 
 print_newline:
+		pusha	#protegendo os valores fora da funcao
+
 		movb	$0x0A,	%al	#newline - '\n'
 		movb	$0x0E,	%ah
 		int	$0x10
@@ -132,9 +146,12 @@ print_newline:
 		movb	$0x0D,	%al
 		int	$0x10
 
+		popa	#restaurando os valores
 		ret
 
 clear_screen:
+		pusha
+
 		movb    $0x06, %ah #valor de ah para limpar a tela, rolando-a para cima
 		movb    $0x00, %al #valor setado para indicar que toda a pagina deve ser limpada
 		movb    $0x07, %bh #atributo usado na linha limpada
@@ -150,6 +167,7 @@ clear_screen:
 		movb    $0x00, %dl
 		int     $0x10 #interrupt de video    
 
+		popa
 		ret
 #Funcao que reboota o sistema quando chamada
 reboot:
@@ -260,6 +278,58 @@ print_failure_pd: #impressao de mensagem de dispositvo nao encontrado
         movw    $failure, %bx
         call    print_str
         jmp     check_devices_end
+
+memory_size:
+		pusha
+
+		int	$0x12
+		#retorna o tamanho da memoria no registrador %ax
+		#que eh dividido em: %ah - bits 8-15 | %al - bits 0-7
+
+		movb	%ah,	%bh	#movendo primeiro byte
+		movb	%al,	%bl	#movendo segundo byte
+
+		movb	$4,	%dl	#contador de iteracoes
+
+	hex_converter:
+		movb	$4,	%cl
+		ror	%cl,	%bh
+		movb	$0x0F,	%ch	#valor de comparacao
+		andb	%bh,	%ch	#fazendo and de 4 em 4 bits - digitos hexadecimais
+
+		movb	$9,	%dh
+		cmp	%dh,	%ch
+		jg	hex_digit
+
+		dec_digit:
+			movb	$0x30,	%dh
+			addb	%dh,	%ch
+			jmp hex_converter_print
+
+		hex_digit:
+			movb	$0x0A,	%dh
+			subb	%dh,	%ch
+			movb	$0x41,	%dh
+			addb	%dh,	%ch
+
+		hex_converter_print:
+			movb	%ch,	%al
+			movb	$0x0E,	%ah
+			int	$0x10
+
+		decb	%dl
+		jz	memory_size_end
+
+		movb	$2,	%dh
+		cmp	%dl,	%dh
+		jne	hex_converter
+
+		movb	%bl,	%bh
+		jmp	hex_converter
+
+	memory_size_end:
+		popa
+		ret
 
     
 . = _start + 510
