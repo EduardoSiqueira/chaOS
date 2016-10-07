@@ -80,7 +80,7 @@ loop:
 			#quando o 1 eh pressionado, a tela e limpada
 			call clear_screen
 
-			jmp default
+			jmp loop
 
 		#quando for apertada a tecla 2, a versao do boot sera impressa	
 		case_print_version:
