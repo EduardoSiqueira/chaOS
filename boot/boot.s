@@ -22,3 +22,10 @@
 # along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 
 #Pra quem for fazer o boot loader - faz aqui
+
+.section	.text
+.globl	_start
+
+_start:
+
+loop:	jmp	loop
