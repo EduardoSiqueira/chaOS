@@ -21,11 +21,33 @@
 # You should have received a copy of the GNU General Public License
 # along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 
-#Pra quem for fazer o boot loader - faz aqui
+.set FLAGS,    0 | 1            # flag de multiboot
+.set MAGIC,    0x1BADB002       # numero que permite ao bootloader encontrar o header
+.set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
+.set STACKSIZE 0x4000           # tamanho da pilha
 
 .section	.text
 .globl	_start
 
 _start:
+    jmp multiboot
+    .align 4
+    
+    multiboot_header: #assinatura de multiboot
+        .long MAGIC
+        .long FLAGS
+        .long CHECKSUM
 
-loop:	jmp	loop
+    multiboot: #secao do codigo do multiboot em si
+        movl    $(stack + STACKSIZE), %esp
+        pushl   $0
+        popf
+        pushl   %ebx
+        pushl   %eax
+        call kernel_main
+
+loop:   hlt
+        jmp     loop
+
+        .comm   stack, STACKSIZE
+
