@@ -1,9 +1,8 @@
 all:    
 	as --32 boot/boot.s -o boot.o
-	ld -m elf_i386 -nostdlib -N -Ttext 7C00 boot.o -o boot.elf
-	objcopy -O binary boot.elf boot.bin
-	qemu-system-i386 boot.bin -boot a
-
+	gcc -m32 -c kernel/kernel.c -o kernel.o
+	ld -m elf_i386 -T linker.ld *.o -o kernel.elf
+	qemu-system-i386 -kernel kernel.elf
 clean:
-	rm ./*.bin ./*.o ./*.elf
+	rm -f ./*.bin ./*.o ./*.elf
 
