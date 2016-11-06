@@ -1,5 +1,6 @@
 
 OBJECTS = kernel.o
+VPATH = boot:src:kernel:include:arch
 
 all: kernel.iso
 
@@ -9,12 +10,13 @@ kernel.iso: isodir/boot/kernel.bin
 isodir/boot/kernel.bin: $(OBJECTS) boot.o
 	gcc -m32 -T linker.ld $^ -o $@ -nostdlib -ffreestanding
 
-kernel.o: kernel/kernel.c
-	gcc -c $^ -o kernel.o -ffreestanding -nostdinc -m32 
+%.o: %.c
+	gcc -c $^ -o $@ -ffreestanding -nostdinc -m32 
 
-boot.o: boot/boot.s
+boot.o: boot.s
 	as --32 $^ -o $@
 
+kernel.c:
 
 .PHONY: clean test
 
