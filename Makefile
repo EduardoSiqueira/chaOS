@@ -1,17 +1,21 @@
 
-OBJECTS = kernel.o
+TARGET = kernel.iso
+BIN = isodir/boot/kernel.bin
+OBJECTS = boot.o kernel.o
 VPATH = boot:src:kernel:include:arch
+CFLAGS = -ffreestanding -nostdinc -m32
+LDFLAGS = -m32 -nostdlib -ffreestanding -I include/
 
-all: kernel.iso
+all: $(TARGET)
 
-kernel.iso: isodir/boot/kernel.bin
-	grub2-mkrescue -o kernel.iso isodir/
+$(TARGET): $(BIN)
+	grub2-mkrescue -o $(TARGET) isodir/
 
-isodir/boot/kernel.bin: $(OBJECTS) boot.o
-	gcc -m32 -T linker.ld $^ -o $@ -nostdlib -ffreestanding
+$(BIN): $(OBJECTS)
+	gcc -T linker.ld $^ -o $@ $(LDFLAGS)
 
 %.o: %.c
-	gcc -c $^ -o $@ -ffreestanding -nostdinc -m32 
+	gcc -c $^ -o $@ $(CFLAGS)
 
 boot.o: boot.s
 	as --32 $^ -o $@
@@ -20,9 +24,9 @@ kernel.c:
 
 .PHONY: clean test
 
-test: kernel.iso
-	qemu-system-i386 -cdrom kernel.iso
+test: $(TARGET)
+	qemu-system-i386 -cdrom $(TARGET)
 
 clean:
 	rm -f ./*.bin ./*.o ./*.elf ./*.iso
-
+	rm -f ./isodir/boot/*.bin
