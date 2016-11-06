@@ -27,8 +27,6 @@ void kernel_main() {
 		++j;
 		i = i + 2;
 	}
-	vidptr[i] = 'u';
-	vidptr[i+1] = 0x02;
 
 	return;
 }
