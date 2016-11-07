@@ -5,6 +5,6 @@
 #define BITS_PER_NIBBLE 4
 
 #if defined(__i386__)
-    #include <arch/ia32/stdint.h>
+    #include <arch/stdint.h>
 
 #endif 
