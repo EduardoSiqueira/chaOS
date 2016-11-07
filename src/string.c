@@ -1,5 +1,4 @@
-#include<stdio.h>
-#include <stddef.h>
+#include <string.h>
 int strlen(char * str){
 	int size =0;
 	while(str[size] != '\0'){
@@ -24,8 +23,17 @@ int strcmp(char * str1, char * str2){
 		else return 1;
 	}
 }
-int main(int argc, char const *argv[])
-{
-	printf("%d\n", strcmp("ab", "ab"));
-	return 0;
+void memcpy(void * mem1, const void * mem2, size_t n){
+	for (int i = 0; i < n; ++i)
+	{
+		((char *)mem1)[i] = ((char*)mem2)[i];
+	}
+}
+void strcpy(char * str1, const char * str2){
+	int i = 0;
+	while(str2[i] != '\0'){
+		str1[i] = str2[i];
+		++i;
+	}
+	str1[i] = '\0';
 }
