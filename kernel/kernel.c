@@ -1,5 +1,4 @@
 
-
 void kernel_main() {
 	const char *str = "my first kernel";
 	char *vidptr = (char*)0xb8000; 	//video mem begins here.

@@ -3,8 +3,8 @@ TARGET = kernel.iso
 BIN = isodir/boot/kernel.bin
 OBJECTS = boot.o kernel.o
 VPATH = boot:src:kernel:include:arch
-CFLAGS = -ffreestanding -nostdinc -m32
-LDFLAGS = -m32 -nostdlib -ffreestanding -I include/
+CFLAGS = -ffreestanding -nostdinc -m32 -I include/
+LDFLAGS = -m32 -nostdlib -ffreestanding 
 
 all: $(TARGET)
 
