@@ -30,7 +30,7 @@ int printf(const char* restrict format, ...) {
 	int written = 0;
  
 	while (*format != '\0') {
-		size_t maxrem = INT_MAX - written;
+		size_t maxrem = 2147483647 - written;
  
 		if (format[0] != '%' || format[1] == '%') {
 			if (format[0] == '%')
