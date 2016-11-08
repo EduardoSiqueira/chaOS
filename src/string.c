@@ -10,7 +10,8 @@ int strlen(const char * str){
 }
 
 void memcpy(void * mem1, const void * mem2, size_t n){
-	for (int i = 0; i < n; ++i)
+	int i;
+	for (i = 0; i < n; ++i)
 	{
 		((char *)mem1)[i] = ((char*)mem2)[i];
 	}
