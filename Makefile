@@ -22,8 +22,11 @@ boot.o: boot.s
 
 .PHONY: clean test
 
-test: $(TARGET)
-	qemu-system-i386 -cdrom $(TARGET)
+run: $(TARGET)
+	qemu-system-i386 -cdrom $<
+
+test: $(BIN)
+	qemu-system-i386 -kernel $<
 
 clean:
 	rm -f ./*.bin ./*.o ./*.elf ./*.iso
