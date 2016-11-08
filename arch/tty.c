@@ -9,7 +9,7 @@
 #include "vga.h"
  
 static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 1024;
+static const size_t VGA_HEIGHT = 25;
 static uint16_t* const VGA_MEMORY = (uint16_t*) 0xB8000;
  
 static size_t terminal_row;
@@ -30,7 +30,7 @@ void terminal_initialize(void) {
 	}
 }
 
-void terminal_reset(void) {
+void terminal_scroll(void) {
 	terminal_initialize();
 }
  
@@ -49,14 +49,14 @@ void terminal_putchar(char c) {
 	switch(c) {
 		case '\n':
 			terminal_column = 0;
-			if(++terminal_row == VGA_HEIGHT) terminal_reset();
+			if(++terminal_row == VGA_HEIGHT) terminal_scroll();
 			break;
 		default:
 			terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
 			if (++terminal_column == VGA_WIDTH) {
 				terminal_column = 0;
 				if (++terminal_row == VGA_HEIGHT)
-					terminal_reset();
+					terminal_scroll();
 			}
 	};
 }
