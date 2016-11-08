@@ -17,13 +17,14 @@ int putchar(int ic) {
 
 static bool print(const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
-	for (size_t i = 0; i < length; i++)
+	size_t i;
+	for (i = 0; i < length; i++)
 		if (putchar(bytes[i]) == EOF)
 			return FALSE;
 	return TRUE;
 }
  
-int printf(const char* restrict format, ...) {
+int printf(const char* format, ...) {
 	va_list parameters;
 	va_start(parameters, format);
  
