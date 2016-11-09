@@ -33,6 +33,30 @@ void itoa(int a, char *conv) {
     conv[index+1] = '\0';
 }
 
+void itob(int a, char *conv) {
+
+    int digit = a % 2;
+    if(a >= 2) itob(a/2, conv);
+    int index = strlen(conv);
+
+    conv[index] = digit + '0';
+    conv[index+1] = '\0';
+}
+
+void itohex(int a, char *conv) {
+
+    int digit = a % 16;
+    if(a >= 16) itohex(a/16, conv);
+    int index = strlen(conv);
+
+    if(digit <= 9) digit += '0';
+    else {
+        digit = (digit % 10) + 'A';
+    }
+    conv[index] = digit;
+    conv[index+1] = '\0';
+}
+
 int printf(const char* format, ...) {
     va_list parameters;
     va_start(parameters, format);
@@ -91,6 +115,31 @@ int printf(const char* format, ...) {
             if (!print(converted, len))
                 return -1;
             written += len;
+        } else if (*format == 'b') {
+            format++;
+            int integer = va_arg(parameters, int);
+            char converted[32] = {'\0'} ;
+            itob(integer, converted);
+            size_t len = strlen(converted);
+            if (maxrem < len) {
+                return -1;
+            }
+            if (!print(converted, len))
+                return -1;
+            written += len;
+        } else if (*format == 'x') {
+            format++;
+            int integer = va_arg(parameters, int);
+            char converted[32] = {'\0'} ;
+            itohex(integer, converted);
+            size_t len = strlen(converted);
+            if (maxrem < len) {
+                return -1;
+            }
+            if (!print(converted, len))
+                return -1;
+            written += len;
+        
         } else {
             format = format_begun_at;
             size_t len = strlen(format);

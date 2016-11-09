@@ -7,5 +7,5 @@ void kernel_main() {
 
 	terminal_initialize();
 	printf("ChaOS v0.0\nWelcome.\n");
-	printf("%d\n", 529);
+	print_registers();
 }
