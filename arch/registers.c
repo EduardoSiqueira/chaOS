@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include <stdint.h>
 
 uint16_t get_cs_content(void) {
