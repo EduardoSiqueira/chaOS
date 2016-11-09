@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-
+#include <../arch/registers.h>
 #include <tty.h>
 
 void kernel_main() {
