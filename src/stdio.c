@@ -1,27 +1,9 @@
-#include <stdbool.h>
+
 #include <stdarg.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 #include <tty.h>
-
-int puts(const char* string) {
-    return printf("%s\n", string);
-}
-
-int putchar(int ic) {
-    char c = (char) ic;
-    terminal_write(&c, sizeof(c));
-    return ic;
-}
-
-static bool print(const char* data, size_t length) {
-    const unsigned char* bytes = (const unsigned char*) data;
-    size_t i;
-    for (i = 0; i < length; i++)
-        if (putchar(bytes[i]) == EOF)
-            return FALSE;
-    return TRUE;
-}
 
 void itoa(int a, char *conv) {
 
@@ -57,102 +39,71 @@ void itohex(int a, char *conv) {
     conv[index+1] = '\0';
 }
 
-int printf(const char* format, ...) {
-    va_list parameters;
-    va_start(parameters, format);
+int printf(const char *format, ...) {
 
-    int written = 0;
+	va_list args;
+	va_start(args, format);
+	int i = 0, chars_written = 0;
+	char *str, c, buffer[32];
 
-    while (*format != '\0') {
-        size_t maxrem = 2147483647 - written;
+	while(format[i] != '\0') {
+		c = format[i];
 
-        if (format[0] != '%' || format[1] == '%') {
-            if (format[0] == '%')
-                format++;
-            size_t amount = 1;
-            while (format[amount] && format[amount] != '%')
-                amount++;
-            if (maxrem < amount) {
-                return -1;
-            }
-            if (!print(format, amount))
-                return -1;
-            format += amount;
-            written += amount;
-            continue;
-        }
+		if(c == '%') {
+			c = format[++i];
+			switch(c) {
+				case 'c':
+					c = (char) va_arg(args, int);
+					putchar(c);
+					chars_written++;
+					break;
+				case 's':
+					str = va_arg(args, char *);
+					terminal_write(str, strlen(str));
+					chars_written += strlen(str);
+					break;
+				case 'b':
+					chars_written += printf("%s", "0b");
+					c = va_arg(args, int);
+					itob(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+				case 'd':
+					c = va_arg(args, int);
+					itoa(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+				case 'x':
+					chars_written += printf("%s", "0x");
+					c = va_arg(args, int);
+					itoa(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+			};
+		} else {
+			terminal_putchar(c);
+			chars_written++;
+		}
 
-        const char* format_begun_at = format++;
+		i++;
+		str = NULL;
+		buffer[0] = '\0';
+		c = 0;
+	}
 
-        if (*format == 'c') {
-            format++;
-            char c = (char) va_arg(parameters, int);
-            if (!maxrem) {
-                return -1;
-            }
-            if (!print(&c, sizeof(c)))
-                return -1;
-            written++;
-        } else if (*format == 's') {
-            format++;
-            const char* str = va_arg(parameters, const char*);
-            size_t len = strlen(str);
-            if (maxrem < len) {
-                return -1;
-            }
-            if (!print(str, len))
-                return -1;
-            written += len;
-        } else if (*format == 'd') {
-            format++;
-            int integer = va_arg(parameters, int);
-            char converted[32] = {'\0'} ;
-            itoa(integer, converted);
-            size_t len = strlen(converted);
-            if (maxrem < len) {
-                return -1;
-            }
-            if (!print(converted, len))
-                return -1;
-            written += len;
-        } else if (*format == 'b') {
-            format++;
-            int integer = va_arg(parameters, int);
-            char converted[32] = {'\0'} ;
-            itob(integer, converted);
-            size_t len = strlen(converted);
-            if (maxrem < len) {
-                return -1;
-            }
-            if (!print(converted, len))
-                return -1;
-            written += len;
-        } else if (*format == 'x') {
-            format++;
-            int integer = va_arg(parameters, int);
-            char converted[32] = {'\0'} ;
-            itohex(integer, converted);
-            size_t len = strlen(converted);
-            if (maxrem < len) {
-                return -1;
-            }
-            if (!print(converted, len))
-                return -1;
-            written += len;
-        
-        } else {
-            format = format_begun_at;
-            size_t len = strlen(format);
-            if (maxrem < len) {
-                return -1;
-            }
-            if (!print(format, len))
-                return -1;
-            written += len;
-            format += len;
-        }
-    }
+	va_end(args);
 
-    va_end(parameters);
-    return written;
+	return chars_written;
+}
+
+int putchar(int c) {
+	terminal_putchar((char) c);
+	return c;
+}
+
+int puts(const char *s) {
+	return printf("%s\n", s);
 }

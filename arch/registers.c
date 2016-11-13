@@ -39,5 +39,11 @@ uint16_t get_ss_content(void) {
 }
 
 void print_registers(void) {
-	printf("Registers:\n\tcs = %d\n\tds = %d\n\tss = %d\n", get_cs_content(), get_ds_content(), get_ss_content());
+	uint16_t cs = get_cs_content();
+	uint16_t ds = get_ds_content();
+	uint16_t ss = get_ss_content();
+	printf("Registers:\tBin\t  Dec\tHex\n\
+	cs =\t%b\t%d\t%x\n\
+	ds =\t%b\t%d\t%x\n\
+	ss =\t%b\t%d\t%x\n", cs, cs, cs, ds, ds, ds, ss, ss, ss);
 }
