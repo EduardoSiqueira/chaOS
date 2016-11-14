@@ -22,7 +22,8 @@ You should have received a copy of the GNU General Public License
 along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//conteudo retirado de: http://wiki.osdev.org/Meaty_Skeleton
+//grande parte desse conteudo foi retirado de: http://wiki.osdev.org/Meaty_Skeleton
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,16 +32,20 @@ along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 #include <tty.h>
  
 #include "vga.h"
- 
+
+//constantes indicando as dimensoes da tela e a saida de video mapeada em memoria
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
 static uint16_t* const VGA_MEMORY = (uint16_t*) 0xB8000;
- 
+
+//variaveis que controlam a cor do terminal, assim como a posicao do cursor e um buffer do que foi escrito
 static size_t terminal_row;
 static size_t terminal_column;
 static uint8_t terminal_color;
 static uint16_t* terminal_buffer;
- 
+
+//funcao que inicializa o cursor e a tela do terminal
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_initialize(void) {
 	terminal_row = 0;
 	terminal_column = 0;
@@ -54,6 +59,7 @@ void terminal_initialize(void) {
 	}
 }
 
+//funcao que move o terminal para cima
 void terminal_scroll(void) {
 	size_t y, x;
 	for (y = 0; y < VGA_HEIGHT-1; y++) {
@@ -65,25 +71,32 @@ void terminal_scroll(void) {
 		}
 	}
 
+	//apos mover o conteudo para cima, apagamos a ultima linha para escrita
 	terminal_row = VGA_HEIGHT - 1;
 	for (size_t x = 0; x < VGA_WIDTH; x++) {
 		const size_t index = y * VGA_WIDTH + x;
 		terminal_buffer[index] = vga_entry(' ', terminal_color);
 	}
 }
- 
+
+//funcao que define a cor de background do terminal
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_setcolor(uint8_t color) {
 	terminal_color = color;
 }
  
+//funcao que escreve um byte na posicao recebida
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
 	const size_t index = y * VGA_WIDTH + x;
 	terminal_buffer[index] = vga_entry(c, color);
 }
- 
+
+//funcao que escreve um caracter na posicao atual do cursor
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_putchar(char c) {
 	unsigned char uc = c;
-	//tratar caracteres especiais(\n, \t, etc)
+	//tratando caracteres especiais(\n, \t, etc)
 	switch(c) {
 		case '\n':
 			terminal_column = 0;
@@ -102,13 +115,17 @@ void terminal_putchar(char c) {
 			}
 	};
 }
- 
+
+//funcao que escreve uma sequencia de dados, de tamanho size, na posicao atual do cursor
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_write(const char* data, size_t size) {
 	for (size_t i = 0; i < size; i++) {
 		terminal_putchar(data[i]);
 	}
 }
- 
+
+//funcao que escreve uma string(sequencia de dados com um terminador '\0' no final) na posicao atual do cursor
+//retirado de: http://wiki.osdev.org/Meaty_Skeleton
 void terminal_writestring(const char* data) {
 	terminal_write(data, strlen(data));
 }
