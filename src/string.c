@@ -1,14 +1,16 @@
 
 #include <string.h>
 
+//funcao que retorna o tamanho de uma string, excluindo o terminador
 int strlen(const char * str){
-	int size =0;
+	int size = 0;
 	while(str[size] != '\0'){
 		++size;
 	}
 	return size;
 }
 
+//funcao que copia um trecho de memoria, de tamanho n, para outro
 void memcpy(void * mem1, const void * mem2, size_t n){
 	int i;
 	for (i = 0; i < n; ++i)
@@ -17,6 +19,7 @@ void memcpy(void * mem1, const void * mem2, size_t n){
 	}
 }
 
+//funcao que copia uma string para outra
 void strcpy(char * str1, const char * str2){
 	int i = 0;
 	while(str2[i] != '\0'){
@@ -26,6 +29,8 @@ void strcpy(char * str1, const char * str2){
 	str1[i] = '\0';
 }
 
+//funcao que compara duas strings
+//retorna 0 caso sejam iguais, um positivo caso a primeira seja maior(ordem alfabetica ou tamanho), ou um negativo caso seja menor
 int strcmp(const char * str1, const char * str2){
 	int i = 0;
 	while(str1[i] != '\0' && str2[i] != '\0'){

@@ -28,7 +28,7 @@ OBJECTS = boot.o kernel.o stdio.o stdlib.o string.o tty.o registers.o
 VPATH = boot:src:kernel:include:arch
 CFLAGS = -ffreestanding -nostdinc -m32 -I include/ -g -Wall -std=c99 
 LDFLAGS = -m32 -nostdlib -ffreestanding -g -Wall
-GRUB = grub
+GRUB = grub2
 
 all: $(TARGET)
 
