@@ -1,4 +1,4 @@
-/* Copyright © 2016
+/*Copyright © 2016
 
 Ali de França Husseinat         n°USP: 9292966 
 Eduardo de Sousa Siqueira       n°USP: 9278299
@@ -21,22 +21,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _KERNEL_TTY_H
-#define _KERNEL_TTY_H
- 
-#include <stddef.h>
- 
-//funcao que inicializa o cursor e a tela do terminal
-//retirado de: http://wiki.osdev.org/Meaty_Skeleton
-void terminal_initialize(void);
-//funcao que escreve um caracter na posicao atual do cursor
-//retirado de: http://wiki.osdev.org/Meaty_Skeleton
-void terminal_putchar(char c);
-//funcao que escreve uma sequencia de dados, de tamanho size, na posicao atual do cursor
-//retirado de: http://wiki.osdev.org/Meaty_Skeleton
-void terminal_write(const char* data, size_t size);
-//funcao que escreve uma string(sequencia de dados com um terminador '\0' no final) na posicao atual do cursor
-//retirado de: http://wiki.osdev.org/Meaty_Skeleton
-void terminal_writestring(const char* data);
- 
+#ifndef _IA32_STDINT_H
+#define _IA32_STDINT_H
+
+//definicao de tipos unsigned
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+
+//definicao de tipos signed
+typedef signed char int8_t;
+typedef signed short int16_t;
+typedef signed int int32_t;
+typedef signed long long int64_t;
+
 #endif

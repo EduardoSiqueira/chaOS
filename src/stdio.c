@@ -1,98 +1,153 @@
-#include <limits.h>
-#include <stdbool.h>
+/* Copyright © 2016
+
+Ali de França Husseinat         n°USP: 9292966 
+Eduardo de Sousa Siqueira       n°USP: 9278299
+Lucas Silva Marcondes           n°USP: 9293612
+Ricardo Fernandes França do Vale    n°USP: 9293477 
+
+This file is part of ChaOS.
+
+ChaOS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+ChaOS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+ 
+
+You should have received a copy of the GNU General Public License
+along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #include <stdarg.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
+#include <stdio.h>
+#include <tty.h>
 
-int puts(const char* string) {
-	return printf("%s\n", string);
+//funcao que converte um inteiro para uma string, para que possa ser imprimido corretamente
+void itoa(int a, char *conv) {
+
+    int digit = a % 10;
+    if(a >= 10) itoa(a/10, conv);
+    int index = strlen(conv);
+
+    conv[index] = digit + '0';
+    conv[index+1] = '\0';
 }
 
-#if defined(__is_libk)
-#include <kernel/tty.h>
-#endif
- 
-int putchar(int ic) {
-#if defined(__is_libk)
-	char c = (char) ic;
-	terminal_write(&c, sizeof(c));
-#else
-	// TODO: Implement stdio and the write system call.
-#endif
-	return ic;
+//funcao que converte um inteiro para sua forma binaria, salva numa string
+void itob(int a, char *conv) {
+
+    int digit = a % 2;
+    if(a >= 2) itob(a/2, conv);
+    int index = strlen(conv);
+
+    conv[index] = digit + '0';
+    conv[index+1] = '\0';
 }
 
-static bool print(const char* data, size_t length) {
-	const unsigned char* bytes = (const unsigned char*) data;
-	for (size_t i = 0; i < length; i++)
-		if (putchar(bytes[i]) == EOF)
-			return false;
-	return true;
+//funcao que converte um inteiro para sua forma hexadecimal, salva numa string
+void itohex(int a, char *conv) {
+
+    int digit = a % 16;
+    if(a >= 16) itohex(a/16, conv);
+    int index = strlen(conv);
+
+    if(digit <= 9) digit += '0';
+    else {
+        digit = (digit % 10) + 'A';
+    }
+    conv[index] = digit;
+    conv[index+1] = '\0';
 }
- 
-int printf(const char* restrict format, ...) {
-	va_list parameters;
-	va_start(parameters, format);
- 
-	int written = 0;
- 
-	while (*format != '\0') {
-		size_t maxrem = INT_MAX - written;
- 
-		if (format[0] != '%' || format[1] == '%') {
-			if (format[0] == '%')
-				format++;
-			size_t amount = 1;
-			while (format[amount] && format[amount] != '%')
-				amount++;
-			if (maxrem < amount) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, amount))
-				return -1;
-			format += amount;
-			written += amount;
-			continue;
-		}
- 
-		const char* format_begun_at = format++;
- 
-		if (*format == 'c') {
-			format++;
-			char c = (char) va_arg(parameters, int /* char promotes to int */);
-			if (!maxrem) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(&c, sizeof(c)))
-				return -1;
-			written++;
-		} else if (*format == 's') {
-			format++;
-			const char* str = va_arg(parameters, const char*);
-			size_t len = strlen(str);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(str, len))
-				return -1;
-			written += len;
+
+//funcao que imprime uma string de acordo com o formato recebido
+//retorna a quantidade de caracteres imprimidos
+int printf(const char *format, ...) {
+
+	//inicializando a lista de argumentos
+	va_list args;
+	va_start(args, format);
+
+	//variaveis que serao usadas
+	int i = 0, chars_written = 0;
+	char *str, c, buffer[32];
+
+	//percorremos a string, procurando onde e como os argumentos tem que ser inseridos
+	while(format[i] != '\0') {
+		c = format[i];
+
+		//encontrando um '%', temos que imprimir o proximo argumento recebido
+		if(c == '%') {
+			c = format[++i];
+			switch(c) {
+				//caso em que temos um caracter
+				case 'c':
+					/* va_arg nao aceita char como argumento */
+					c = (char) va_arg(args, int);
+					putchar(c);
+					chars_written++;
+					break;
+				//caso em que temos uma string
+				case 's':
+					str = va_arg(args, char *);
+					terminal_write(str, strlen(str));
+					chars_written += strlen(str);
+					break;
+				//caso em que temos um inteiro, a ser imprimido em forma binaria
+				case 'b':
+					chars_written += printf("%s", "0b");
+					c = va_arg(args, int);
+					itob(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+				//caso em que temos um inteiro, a ser imprimido em forma decimal
+				case 'd':
+					c = va_arg(args, int);
+					itoa(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+				//caso em que temos um inteiro, a ser imprimido em forma hexadecimal
+				case 'x':
+					chars_written += printf("%s", "0x");
+					c = va_arg(args, int);
+					itohex(c, buffer);
+					terminal_write(buffer, strlen(buffer));
+					chars_written += strlen(buffer);
+					break;
+			};
+		//caso contrario, eh um caracter ordinario, e imprimimos normalmente
 		} else {
-			format = format_begun_at;
-			size_t len = strlen(format);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, len))
-				return -1;
-			written += len;
-			format += len;
+			terminal_putchar(c);
+			chars_written++;
 		}
+
+		i++; //incrementando o indice da string
+		//reinicializando variaveis auxiliares
+		str = NULL;
+		buffer[0] = '\0';
+		c = 0;
 	}
- 
-	va_end(parameters);
-	return written;
+
+	va_end(args);
+
+	return chars_written; //retorna a quantidade de caracteres imprimidos
+}
+
+//funcao que imprime um caracter na tela
+//retorna o caracter imprimido, convertido para inteiro
+int putchar(int c) {
+	terminal_putchar((char) c);
+	return c;
+}
+
+//funcao que imprime uma string, com um newline no final
+//retorna um numero nao-negativo em caso de sucesso
+int puts(const char *s) {
+	return printf("%s\n", s);
 }

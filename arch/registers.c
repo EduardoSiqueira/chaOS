@@ -21,22 +21,60 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _REGISTERS_H
-#define _REGISTERS_H
 
+#include <stdio.h>
 #include <stdint.h>
 
-//funcao com assembly inline para mover o conteudo do cs para variavel que e retornada
-uint16_t get_cs_content(void);
+//funcao com assembly inline para mover o conteudo do cs para variavel que e
+//retornada
+uint16_t get_cs_content(void) {
 
-//funcao com assembly inline para mover o conteudo do ds para variavel que e retornada
-uint16_t get_ds_content(void);
+	uint16_t content = 0;
 
-//funcao com assembly inline para mover o conteudo do ss para variavel que e retornada
-uint16_t get_ss_content(void);
+	__asm__ __volatile__(
+		"movw %%cs, %0"
+		:"=a" (content)
+	);
+
+	return content;
+}
+
+//funcao com assembly inline para mover o conteudo do ds para variavel que e
+//retornada
+uint16_t get_ds_content(void) {
+
+	uint16_t content = 0;
+
+	__asm__ __volatile__(
+		"movw %%ds, %0"
+		:"=a" (content)
+	);
+
+	return content;
+}
+
+//funcao com assembly inline para mover o conteudo do ss para variavel que e
+//retornada
+uint16_t get_ss_content(void) {
+
+	uint16_t content = 0;
+
+	__asm__ __volatile__(
+		"movw %%ss, %0"
+		:"=a" (content)
+	);
+
+	return content;
+}
 
 //funcao que imprime conteudo dos registradores cs, ds e ss
 //a impressao ocorre em valor binaro, decimal e hexadecimal
-void print_registers(void);
-
-#endif
+void print_registers(void) {
+	uint16_t cs = get_cs_content();
+	uint16_t ds = get_ds_content();
+	uint16_t ss = get_ss_content();
+	printf("Registers:\tBin\t  Dec\tHex\n\
+	cs =\t%b\t%d\t%x\n\
+	ds =\t%b\t%d\t%x\n\
+	ss =\t%b\t%d\t%x\n", cs, cs, cs, ds, ds, ds, ss, ss, ss);
+}
