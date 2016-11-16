@@ -21,22 +21,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef _STDLIB_H
+#define _STDLIB_H
 
-#include <stddef.h>
-
-//funcao que retorna o tamanho de uma string, excluindo o terminador
-int strlen(const char * str);
-
-//funcao que copia um trecho de memoria, de tamanho n, para outro
-void memcpy(void * mem1, const void * mem2, size_t n);
-
-//funcao que copia uma string para outra
-void strcpy(char * str1, const char * str2);
-
-//funcao que compara duas strings
-//retorna 0 caso sejam iguais, um positivo caso a primeira seja maior(ordem alfabetica ou tamanho), ou um negativo caso seja menor
-int strcmp(const char * str1, const char * str2);
-
+//definindo que essa funcao nao pode ser retornada
+__attribute__((__noreturn__))
+//funcao que trava a execucao do programa
+void abort(void);
+ 
 #endif

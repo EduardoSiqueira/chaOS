@@ -21,22 +21,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with ChaOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef _STDARG_H
+#define _STDARG_H
 
-#include <stddef.h>
+/* as definicoes da lista de argumentos variaveis sao feitas com base nas funcionalidades built-in do gcc */
+typedef __builtin_va_list va_list;
 
-//funcao que retorna o tamanho de uma string, excluindo o terminador
-int strlen(const char * str);
-
-//funcao que copia um trecho de memoria, de tamanho n, para outro
-void memcpy(void * mem1, const void * mem2, size_t n);
-
-//funcao que copia uma string para outra
-void strcpy(char * str1, const char * str2);
-
-//funcao que compara duas strings
-//retorna 0 caso sejam iguais, um positivo caso a primeira seja maior(ordem alfabetica ou tamanho), ou um negativo caso seja menor
-int strcmp(const char * str1, const char * str2);
+#define va_start(vl, last_arg) __builtin_va_start(vl, last_arg)
+#define va_end(vl) __builtin_va_end(vl)
+#define va_arg(v, t) __builtin_va_arg(v,t)
 
 #endif
